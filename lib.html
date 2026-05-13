@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GS Mwendo School Library | E-Library System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+
+        :root{
+            --forest:#2c4b2c;--forest-dark:#1a321a;--forest-light:#3d6b3d;
+            --gold:#d4a017;--gold-light:#f0c940;--gold-pale:#f7e9cc;
+            --cream:#fdf8eb;--cream-dark:#f0e6cc;--cream-darker:#e5d5b0;
+            --wood:#8b6946;--wood-light:#b8935a;--bark:#5a3e1b;
+            --card-bg:#fffef7;--card-border:#eedbaa;
+            --text-dark:#2d4429;--text-body:#4a3f2f;--text-muted:#7a6b52;
+            --danger:#c0392b;--success:#27ae60;--info:#2980b9;
+            --sidebar-w:270px;--header-h:72px;--radius:20px;
+        }
+
+        body{
+            background:var(--cream);
+            background-image:
+                radial-gradient(circle at 15% 25%,rgba(44,62,49,0.06) 2%,transparent 2.5%),
+                radial-gradient(circle at 75% 65%,rgba(139,105,70,0.04) 1.8%,transparent 2%);
+            background-size:38px 38px,30px 30px;
+            min-height:100vh;overflow-x:hidden;
+        }
+
+        /* ===== LIBRARY AMBIENT PARTICLES ===== */
+        .ambient-particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+        .ambient-particles .dust{
+            position:absolute;width:3px;height:3px;background:var(--gold);border-radius:50%;opacity:0;
+            animation:dustFloat linear infinite;
+        }
+        @keyframes dustFloat{
+            0%{opacity:0;transform:translateY(100vh) rotate(0deg)}
+            10%{opacity:0.4}90%{opacity:0.3}
+            100%{opacity:0;transform:translateY(-10vh) rotate(360deg)}
+        }
+
+        /* ===== LOGIN PAGE ===== */
+        #loginPage{
+            position:fixed;top:0;left:0;width:100%;height:100%;
+            display:flex;align-items:center;justify-content:center;
+            z-index:2000;padding:20px;
+            background:linear-gradient(160deg,#2c4b2c 0%,#1a321a 40%,#0f200f 100%);
+            transition:opacity 0.7s ease,transform 0.7s ease;
+        }
+        #loginPage.hidden{opacity:0;transform:scale(1.04);pointer-events:none}
+
+        .login-container{
+            position:relative;z-index:2;width:460px;max-width:95vw;
+            background:rgba(253,248,235,0.98);border-radius:40px;
+            box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 120px rgba(212,160,23,0.08);
+            padding:3rem 2.5rem 2.5rem;text-align:center;
+            border:2px solid rgba(212,160,23,0.3);
+            animation:loginSlide 0.8s ease-out;
+        }
+        @keyframes loginSlide{from{opacity:0;transform:translateY(40px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+        /* School Logo */
+        .school-logo-wrap{position:relative;display:inline-block;margin-bottom:10px}
+        .school-logo{
+            width:110px;height:110px;border-radius:50%;
+            background:linear-gradient(145deg,var(--forest),var(--forest-dark));
+            display:flex;align-items:center;justify-content:center;
+            border:4px solid var(--gold);position:relative;z-index:2;
+            box-shadow:0 10px 30px rgba(0,0,0,0.3),0 0 40px rgba(212,160,23,0.15);
+            animation:logoBreath 4s ease-in-out infinite;
+        }
+        @keyframes logoBreath{
+            0%,100%{box-shadow:0 10px 30px rgba(0,0,0,0.3),0 0 40px rgba(212,160,23,0.15)}
+            50%{box-shadow:0 10px 30px rgba(0,0,0,0.3),0 0 60px rgba(212,160,23,0.25)}
+        }
+        .school-logo i{font-size:3rem;color:var(--gold-pale)}
+        .school-logo-wrap::before{
+            content:'';position:absolute;top:-8px;left:-8px;right:-8px;bottom:-8px;
+            border:2px dashed var(--gold);border-radius:50%;opacity:0.3;
+            animation:logoRingSpin 20s linear infinite;
+        }
+        @keyframes logoRingSpin{to{transform:rotate(360deg)}}
+
+        .login-title{
+            font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+            color:var(--text-dark);margin-top:12px;letter-spacing:-0.5px;
+        }
+        .login-subtitle{
+            color:var(--wood);font-weight:600;font-size:0.85rem;
+            text-transform:uppercase;letter-spacing:3px;margin-top:4px;
+        }
+
+        .login-form{margin-top:28px;text-align:left}
+        .input-group{margin-bottom:18px}
+        .input-group label{
+            display:flex;align-items:center;gap:8px;
+            font-weight:700;font-size:0.85rem;color:var(--forest);
+            margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;
+        }
+        .input-group label i{color:var(--wood);font-size:0.9rem}
+        .input-group input{
+            width:100%;padding:14px 20px;border:2px solid var(--cream-darker);
+            border-radius:50px;font-size:1rem;background:var(--card-bg);
+            transition:all 0.3s ease;outline:none;color:var(--text-body);
+        }
+        .input-group input:focus{
+            border-color:var(--forest-light);
+            box-shadow:0 0 0 4px rgba(44,122,71,0.15);
+        }
+        .input-group input::placeholder{color:#b5a582}
+
+        .login-error{
+            display:none;align-items:center;gap:10px;
+            background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.25);
+            color:var(--danger);padding:12px 18px;border-radius:16px;
+            font-size:0.85rem;font-weight:600;margin-bottom:16px;
+            animation:errorShake 0.5s ease;
+        }
+        .login-error.show{display:flex}
+        @keyframes errorShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+
+        .login-btn{
+            width:100%;padding:15px;border:none;border-radius:50px;
+            background:linear-gradient(135deg,var(--forest),var(--forest-dark));
+            color:white;font-size:1.1rem;font-weight:800;cursor:pointer;
+            transition:all 0.3s ease;display:flex;align-items:center;
+            justify-content:center;gap:10px;
+            box-shadow:0 6px 20px rgba(44,75,44,0.4);position:relative;overflow:hidden;
+        }
+        .login-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(44,75,44,0.5)}
+        .login-btn:active{transform:translateY(0)}
+        .login-btn .btn-glow{
+            position:absolute;top:0;left:-100%;width:100%;height:100%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);
+            animation:btnGlow 3.5s infinite;
+        }
+        @keyframes btnGlow{0%{left:-100%}50%,100%{left:100%}}
+
+        .login-hint{
+            margin-top:24px;background:var(--cream-dark);padding:14px 18px;
+            border-radius:20px;font-size:0.78rem;color:var(--wood);line-height:1.6;
+        }
+        .login-hint strong{color:var(--forest)}
+
+        /* ===== DASHBOARD LAYOUT ===== */
+        #dashboard{display:none;min-height:100vh;position:relative;z-index:1}
+        #dashboard.active{display:flex}
+
+        /* Sidebar */
+        .sidebar{
+            width:var(--sidebar-w);min-height:100vh;position:fixed;top:0;left:0;z-index:100;
+            background:linear-gradient(180deg,var(--forest-dark) 0%,#0f200f 100%);
+            border-right:3px solid var(--gold);
+            display:flex;flex-direction:column;transition:transform 0.35s ease;
+            overflow-y:auto;
+        }
+        .sidebar-logo-section{
+            padding:24px 20px;display:flex;align-items:center;gap:14px;
+            border-bottom:1px solid rgba(212,160,23,0.2);
+        }
+        .sidebar-logo-circle{
+            width:52px;height:52px;border-radius:50%;flex-shrink:0;
+            background:linear-gradient(135deg,var(--forest),var(--forest-light));
+            border:2px solid var(--gold);display:flex;align-items:center;
+            justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);
+        }
+        .sidebar-logo-circle i{font-size:1.3rem;color:var(--gold-pale)}
+        .sidebar-logo-text h3{
+            font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;
+            color:var(--gold-pale);line-height:1.2;
+        }
+        .sidebar-logo-text small{
+            font-size:0.65rem;font-weight:700;color:var(--gold);letter-spacing:2px;
+            text-transform:uppercase;
+        }
+
+        .sidebar-nav{flex:1;padding:16px 12px}
+        .nav-group-title{
+            font-size:0.65rem;font-weight:800;color:rgba(212,160,23,0.5);
+            text-transform:uppercase;letter-spacing:2.5px;padding:14px 16px 8px;
+        }
+        .nav-link{
+            display:flex;align-items:center;gap:12px;padding:11px 16px;
+            border-radius:14px;cursor:pointer;transition:all 0.25s ease;
+            color:rgba(255,242,219,0.55);font-weight:600;font-size:0.88rem;
+            margin-bottom:2px;position:relative;
+        }
+        .nav-link:hover{background:rgba(255,255,255,0.06);color:rgba(255,242,219,0.9)}
+        .nav-link.active{
+            background:linear-gradient(135deg,rgba(212,160,23,0.15),rgba(212,160,23,0.05));
+            color:var(--gold-light);
+        }
+        .nav-link.active::before{
+            content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;
+            background:var(--gold);border-radius:0 3px 3px 0;
+        }
+        .nav-link i{width:20px;text-align:center;font-size:1rem}
+        .nav-link .nav-badge{
+            margin-left:auto;background:var(--gold);color:var(--forest-dark);
+            font-size:0.65rem;font-weight:800;padding:2px 8px;border-radius:20px;
+        }
+
+        .sidebar-user{
+            padding:16px;border-top:1px solid rgba(212,160,23,0.15);
+        }
+        .sidebar-user-card{
+            display:flex;align-items:center;gap:10px;padding:10px;
+            border-radius:14px;background:rgba(255,255,255,0.04);
+        }
+        .user-avatar{
+            width:40px;height:40px;border-radius:12px;
+            background:linear-gradient(135deg,var(--gold),var(--wood-light));
+            display:flex;align-items:center;justify-content:center;
+            font-weight:800;font-size:0.85rem;color:var(--forest-dark);flex-shrink:0;
+        }
+        .user-name{font-size:0.82rem;font-weight:700;color:var(--gold-pale)}
+        .user-role{font-size:0.68rem;color:rgba(255,242,219,0.4)}
+
+        /* Main area */
+        .main-area{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+
+        /* Top header */
+        .top-header{
+            height:var(--header-h);position:sticky;top:0;z-index:50;
+            background:rgba(253,248,235,0.92);backdrop-filter:blur(16px);
+            border-bottom:2px solid var(--cream-darker);
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 28px;gap:16px;
+        }
+        .header-left{display:flex;align-items:center;gap:14px}
+        .menu-toggle{
+            display:none;background:none;border:none;color:var(--text-dark);
+            font-size:1.3rem;cursor:pointer;
+        }
+        .header-left h2{
+            font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:900;
+            color:var(--text-dark);
+        }
+        .header-left h2 span{color:var(--forest)}
+
+        .header-right{display:flex;align-items:center;gap:10px}
+        .header-search{
+            display:flex;align-items:center;gap:8px;
+            background:white;border:1.5px solid var(--cream-darker);
+            border-radius:50px;padding:8px 16px;transition:all 0.3s;
+        }
+        .header-search:focus-within{border-color:var(--forest-light);box-shadow:0 0 0 3px rgba(44,122,71,0.12)}
+        .header-search i{color:var(--wood);font-size:0.85rem}
+        .header-search input{
+            border:none;background:none;outline:none;color:var(--text-body);
+            font-size:0.85rem;width:180px;font-family:'Poppins',sans-serif;
+        }
+        .header-search input::placeholder{color:#b5a582}
+
+        .header-icon-btn{
+            width:40px;height:40px;border-radius:12px;background:white;
+            border:1.5px solid var(--cream-darker);display:flex;
+            align-items:center;justify-content:center;cursor:pointer;
+            color:var(--wood);transition:all 0.3s;position:relative;
+        }
+        .header-icon-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+        .logout-btn{
+            background:var(--forest);border:none;padding:9px 20px;
+            border-radius:50px;color:white;font-weight:700;font-size:0.8rem;
+            cursor:pointer;transition:all 0.3s;display:flex;align-items:center;
+            gap:6px;font-family:'Poppins',sans-serif;
+        }
+        .logout-btn:hover{background:var(--forest-dark);transform:scale(0.97)}
+
+        /* Content area */
+        .content-area{flex:1;padding:28px;position:relative;z-index:1}
+
+        /* Page sections */
+        .page-section{display:none;animation:pageIn 0.4s ease}
+        .page-section.active{display:block}
+        @keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+        /* ===== HOME PAGE ===== */
+        .stats-row{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:18px;margin-bottom:30px;
+        }
+        .stat-card{
+            background:var(--card-bg);border-radius:var(--radius);padding:22px;
+            border:1px solid var(--card-border);position:relative;overflow:hidden;
+            transition:transform 0.3s,box-shadow 0.3s;
+        }
+        .stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,0.08)}
+        .stat-card .sc-icon{
+            width:44px;height:44px;border-radius:12px;display:flex;
+            align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:14px;
+        }
+        .stat-card .sc-icon.green{background:rgba(39,174,96,0.12);color:var(--success)}
+        .stat-card .sc-icon.gold{background:rgba(212,160,23,0.12);color:var(--gold)}
+        .stat-card .sc-icon.blue{background:rgba(41,128,185,0.12);color:var(--info)}
+        .stat-card .sc-icon.red{background:rgba(192,57,43,0.12);color:var(--danger)}
+        .stat-card .sc-number{
+            font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+            color:var(--text-dark);line-height:1;
+        }
+        .stat-card .sc-label{font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-top:4px}
+        .stat-card::after{
+            content:'';position:absolute;top:-30px;right:-30px;
+            width:90px;height:90px;border-radius:50%;opacity:0.04;
+        }
+        .stat-card:nth-child(1)::after{background:var(--success)}
+        .stat-card:nth-child(2)::after{background:var(--gold)}
+        .stat-card:nth-child(3)::after{background:var(--info)}
+        .stat-card:nth-child(4)::after{background:var(--danger)}
+
+        .section-heading{
+            display:flex;align-items:center;justify-content:space-between;
+            margin-bottom:18px;flex-wrap:wrap;gap:10px;
+        }
+        .section-heading h3{
+            font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;
+            color:var(--text-dark);
+        }
+        .section-heading h3 i{color:var(--gold);margin-right:6px}
+
+        /* Quick nav cards */
+        .quick-nav-grid{
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+            gap:16px;margin-bottom:30px;
+        }
+        .quick-nav-card{
+            background:var(--card-bg);border:1px solid var(--card-border);
+            border-radius:var(--radius);padding:20px;display:flex;
+            align-items:center;gap:16px;cursor:pointer;transition:all 0.3s ease;
+        }
+        .quick-nav-card:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(0,0,0,0.08);border-color:var(--gold)}
+        .qnc-icon{
+            width:56px;height:56px;border-radius:16px;display:flex;
+            align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;
+        }
+        .qnc-info h4{font-size:1rem;font-weight:800;color:var(--text-dark)}
+        .qnc-info p{font-size:0.75rem;color:var(--text-muted);margin-top:2px}
+        .qnc-arrow{margin-left:auto;color:var(--cream-darker);transition:all 0.3s}
+        .quick-nav-card:hover .qnc-arrow{color:var(--gold);transform:translateX(4px)}
+
+        /* ===== BOOKS GRID ===== */
+        .level-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+        .level-tab{
+            padding:9px 18px;background:white;border:1.5px solid var(--cream-darker);
+            border-radius:50px;color:var(--text-muted);font-size:0.8rem;
+            font-weight:700;cursor:pointer;transition:all 0.25s;
+            font-family:'Poppins',sans-serif;
+        }
+        .level-tab:hover{border-color:var(--forest-light);color:var(--text-body)}
+        .level-tab.active{
+            background:linear-gradient(135deg,var(--forest),var(--forest-dark));
+            border-color:var(--forest);color:white;box-shadow:0 4px 12px rgba(44,75,44,0.3);
+        }
+
+        .books-grid{
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px;
+        }
+        .book-card{
+            background:var(--card-bg);border-radius:var(--radius);
+            border:1px solid var(--card-border);overflow:hidden;
+            transition:all 0.3s ease;border-left:6px solid var(--gold);
+        }
+        .book-card:hover{
+            transform:translateY(-5px);
+            box-shadow:0 16px 35px rgba(0,0,0,0.1);
+        }
+        .book-cover{
+            height:120px;display:flex;align-items:center;justify-content:center;
+            position:relative;overflow:hidden;
+        }
+        .book-cover i{font-size:2.5rem;opacity:0.5}
+        .book-level-badge{
+            position:absolute;top:10px;right:10px;padding:4px 12px;
+            border-radius:20px;font-size:0.65rem;font-weight:800;
+            text-transform:uppercase;letter-spacing:1px;
+        }
+        .badge-primary{background:rgba(39,174,96,0.15);color:var(--success);border:1px solid rgba(39,174,96,0.3)}
+        .badge-ordinary{background:rgba(41,128,185,0.15);color:var(--info);border:1px solid rgba(41,128,185,0.3)}
+        .badge-advanced{background:rgba(212,160,23,0.15);color:var(--gold);border:1px solid rgba(212,160,23,0.3)}
+        .badge-software{background:rgba(192,57,43,0.15);color:var(--danger);border:1px solid rgba(192,57,43,0.3)}
+
+        .book-body{padding:16px 18px 18px}
+        .book-body h4{font-size:1rem;font-weight:800;color:var(--text-dark);line-height:1.3;margin-bottom:4px}
+        .book-body .book-author{font-size:0.75rem;color:var(--text-muted);margin-bottom:8px}
+        .book-body .book-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+        .book-body .book-tags span{
+            font-size:0.68rem;font-weight:700;padding:3px 10px;
+            border-radius:20px;background:var(--cream-dark);color:var(--wood);
+        }
+        .book-body .book-desc{font-size:0.82rem;color:var(--text-body);line-height:1.5;margin-bottom:14px}
+
+        .download-btn{
+            width:100%;padding:10px;border:none;border-radius:50px;
+            background:linear-gradient(135deg,var(--forest),var(--forest-dark));
+            color:white;font-size:0.82rem;font-weight:700;cursor:pointer;
+            transition:all 0.3s;display:flex;align-items:center;
+            justify-content:center;gap:8px;font-family:'Poppins',sans-serif;
+        }
+        .download-btn:hover{box-shadow:0 4px 16px rgba(44,75,44,0.3);transform:translateY(-1px)}
+        .download-btn.done{
+            background:var(--card-bg);border:1.5px solid var(--success);
+            color:var(--success);
+        }
+
+        /* ===== SUGGESTIONS ===== */
+        .suggestions-wrap{max-width:720px}
+        .suggestion-form-card{
+            background:var(--card-bg);border:1px solid var(--card-border);
+            border-radius:var(--radius);padding:28px;margin-bottom:24px;
+        }
+        .suggestion-form-card h3{
+            font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900;
+            color:var(--text-dark);margin-bottom:18px;
+        }
+        .suggestion-form-card h3 i{color:var(--gold);margin-right:8px}
+        .suggestion-form-card textarea{
+            width:100%;min-height:110px;padding:14px 18px;
+            background:white;border:2px solid var(--cream-darker);border-radius:16px;
+            font-size:0.9rem;font-family:'Poppins',sans-serif;resize:vertical;
+            outline:none;color:var(--text-body);transition:border-color 0.3s;
+        }
+        .suggestion-form-card textarea:focus{border-color:var(--forest-light)}
+        .suggestion-form-card textarea::placeholder{color:#b5a582}
+        .form-row{display:flex;gap:12px;margin-top:14px}
+        .form-row select,.form-row input[type=text]{
+            flex:1;padding:11px 16px;background:white;border:2px solid var(--cream-darker);
+            border-radius:50px;font-size:0.85rem;font-family:'Poppins',sans-serif;
+            outline:none;color:var(--text-body);transition:border-color 0.3s;
+        }
+        .form-row select:focus,.form-row input[type=text]:focus{border-color:var(--forest-light)}
+        .form-row select option{background:white;color:var(--text-body)}
+
+        .submit-sug-btn{
+            margin-top:16px;padding:12px 28px;border:none;border-radius:50px;
+            background:linear-gradient(135deg,var(--forest),var(--forest-dark));
+            color:white;font-size:0.85rem;font-weight:800;cursor:pointer;
+            transition:all 0.3s;display:inline-flex;align-items:center;gap:8px;
+            font-family:'Poppins',sans-serif;
+        }
+        .submit-sug-btn:hover{box-shadow:0 6px 20px rgba(44,75,44,0.3);transform:translateY(-2px)}
+
+        .sug-item{
+            background:var(--card-bg);border:1px solid var(--card-border);
+            border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;
+            animation:pageIn 0.4s ease;
+        }
+        .sug-item .sug-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+        .sug-item .sug-cat{
+            font-size:0.68rem;font-weight:800;text-transform:uppercase;
+            letter-spacing:1px;padding:3px 10px;border-radius:8px;
+            background:rgba(39,174,96,0.1);color:var(--success);
+        }
+        .sug-item .sug-time{font-size:0.7rem;color:var(--text-muted)}
+        .sug-item .sug-text{font-size:0.88rem;color:var(--text-body);line-height:1.6}
+        .sug-item .sug-author{font-size:0.75rem;color:var(--text-muted);margin-top:8px;font-weight:600}
+
+        /* ===== MY DOWNLOADS ===== */
+        .dl-item{
+            background:var(--card-bg);border:1px solid var(--card-border);
+            border-radius:14px;padding:14px 18px;display:flex;align-items:center;
+            gap:14px;margin-bottom:10px;transition:all 0.3s;
+        }
+        .dl-item:hover{border-color:var(--gold)}
+        .dl-icon{
+            width:44px;height:44px;border-radius:12px;
+            background:rgba(39,174,96,0.1);color:var(--success);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.1rem;flex-shrink:0;
+        }
+        .dl-info{flex:1}
+        .dl-info h4{font-size:0.88rem;font-weight:700;color:var(--text-dark)}
+        .dl-info p{font-size:0.72rem;color:var(--text-muted)}
+        .dl-status{font-size:0.72rem;font-weight:700;color:var(--success);display:flex;align-items:center;gap:4px}
+
+        .empty-state{
+            text-align:center;padding:50px 20px;color:var(--text-muted);
+        }
+        .empty-state i{font-size:3rem;opacity:0.2;margin-bottom:14px;display:block}
+        .empty-state p{font-size:0.95rem;font-weight:600}
+
+        /* ===== TOAST ===== */
+        .toast-box{
+            position:fixed;top:24px;right:24px;z-index:9999;
+            display:flex;flex-direction:column;gap:10px;
+        }
+        .toast{
+            background:var(--card-bg);border:1px solid var(--card-border);
+            border-left:4px solid var(--success);border-radius:14px;
+            padding:14px 20px;display:flex;align-items:center;gap:10px;
+            box-shadow:0 10px 40px rgba(0,0,0,0.15);animation:toastIn 0.4s ease;
+            min-width:300px;
+        }
+        .toast.warn{border-left-color:var(--gold)}
+        .toast.out{animation:toastOut 0.3s ease forwards}
+        @keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes toastOut{to{opacity:0;transform:translateX(50px)}}
+        .toast i{font-size:1.1rem;color:var(--success)}
+        .toast.warn i{color:var(--gold)}
+        .toast-text{font-size:0.82rem;font-weight:600;color:var(--text-body)}
+
+        /* Sidebar overlay (mobile) */
+        .sidebar-overlay{
+            display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+            background:rgba(0,0,0,0.5);z-index:90;
+        }
+        .sidebar-overlay.show{display:block}
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width:900px){
+            .sidebar{transform:translateX(-100%);z-index:200}
+            .sidebar.open{transform:translateX(0)}
+            .main-area{margin-left:0}
+            .menu-toggle{display:block}
+            .header-search input{width:120px}
+            .content-area{padding:18px 14px}
+            .stats-row{grid-template-columns:repeat(2,1fr);gap:10px}
+            .quick-nav-grid{grid-template-columns:1fr}
+            .books-grid{grid-template-columns:1fr}
+            .form-row{flex-direction:column}
+        }
+        @media(max-width:500px){
+            .stats-row{grid-template-columns:1fr}
+            .header-search{display:none}
+            .top-header{padding:0 14px}
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:6px}
+        ::-webkit-scrollbar-track{background:var(--cream)}
+        ::-webkit-scrollbar-thumb{background:var(--cream-darker);border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--wood)}
+    </style>
+</head>
+<body>
+
+<!-- Ambient library dust particles -->
+<div class="ambient-particles" id="ambientParticles"></div>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="loginPage">
+    <div class="login-container">
+        <div class="school-logo-wrap">
+            <div class="school-logo">
+                <i class="fas fa-book-open"></i>
+            </div>
+        </div>
+        <h1 class="login-title">GS Mwendo School</h1>
+        <p class="login-subtitle">School Library System</p>
+
+        <div class="login-error" id="loginError">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Ijambobanga sibyo. Gerageza ukundi.</span>
+        </div>
+
+        <form class="login-form" id="loginForm" autocomplete="off">
+            <div class="input-group">
+                <label><i class="fas fa-user-graduate"></i> Izina ry'ukoresha</label>
+                <input type="text" id="loginUser" placeholder="Andika izina ryawe">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-key"></i> Ijambobanga</label>
+                <input type="password" id="loginPass" placeholder="Andika ijambobanga">
+            </div>
+            <button type="submit" class="login-btn">
+                <span class="btn-glow"></span>
+                <i class="fas fa-sign-in-alt"></i> Kwinjira mu Isomero
+            </button>
+        </form>
+        <div class="login-hint">
+            <i class="fas fa-info-circle"></i>
+            Izina: <strong>admin</strong> &nbsp;|&nbsp; Ijambobanga: <strong>library2024</strong>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo-section">
+            <div class="sidebar-logo-circle">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="sidebar-logo-text">
+                <h3>GS Mwendo</h3>
+                <small>School Library</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-group-title">Urwego rw'ibanze</div>
+            <div class="nav-link active" data-page="home"><i class="fas fa-home"></i> Ahabanza</div>
+            <div class="nav-link" data-page="books"><i class="fas fa-book"></i> Ibitabo byose <span class="nav-badge" id="navBookCount">48</span></div>
+            <div class="nav-link" data-page="downloads"><i class="fas fa-download"></i> Byakuyewe</div>
+
+            <div class="nav-group-title">Imyaka n'amasomo</div>
+            <div class="nav-link" data-page="primary"><i class="fas fa-child"></i> Primary (P1-P6)</div>
+            <div class="nav-link" data-page="ordinary"><i class="fas fa-user-graduate"></i> Ordinary (S1-S3)</div>
+            <div class="nav-link" data-page="advanced"><i class="fas fa-brain"></i> Advanced (L3-L4)</div>
+            <div class="nav-link" data-page="software"><i class="fas fa-code"></i> Software Dev</div>
+
+            <div class="nav-group-title">Ibindi</div>
+            <div class="nav-link" data-page="suggestions"><i class="fas fa-lightbulb"></i> Ibitekerezo</div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="sidebar-user-card">
+                <div class="user-avatar" id="userAvatarSidebar">AD</div>
+                <div>
+                    <div class="user-name" id="userNameSidebar">Admin</div>
+                    <div class="user-role">Umurinzi w'isomero</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="main-area">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <h2>GS Mwendo <span>Library</span></h2>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Shakisha igitabo...">
+                </div>
+                <div class="header-icon-btn" title="Ubutumwa"><i class="fas fa-bell"></i></div>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Sohoka</button>
+            </div>
+        </header>
+
+        <main class="content-area">
+
+            <!-- ===== HOME ===== -->
+            <section class="page-section active" id="pageHome">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="sc-icon green"><i class="fas fa-book"></i></div>
+                        <div class="sc-number" id="statBooks">48</div>
+                        <div class="sc-label">Ibitabo byose</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="sc-icon gold"><i class="fas fa-layer-group"></i></div>
+                        <div class="sc-number">4</div>
+                        <div class="sc-label">Urwego</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="sc-icon blue"><i class="fas fa-download"></i></div>
+                        <div class="sc-number" id="statDownloads">0</div>
+                        <div class="sc-label">Ibitabo wakuyewe</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="sc-icon red"><i class="fas fa-lightbulb"></i></div>
+                        <div class="sc-number" id="statSuggestions">0</div>
+                        <div class="sc-label">Ibitekerezo watanzwe</div>
+                    </div>
+                </div>
+
+                <div class="section-heading"><h3><i class="fas fa-compass"></i> Hitamo urwego</h3></div>
+                <div class="quick-nav-grid">
+                    <div class="quick-nav-card" data-goto="primary">
+                        <div class="qnc-icon" style="background:rgba(39,174,96,0.12);color:var(--success)"><i class="fas fa-child"></i></div>
+                        <div class="qnc-info"><h4>Primary Level</h4><p>P1, P2, P3, P4, P5, P6 - Ibitabo 18</p></div>
+                        <div class="qnc-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div class="quick-nav-card" data-goto="ordinary">
+                        <div class="qnc-icon" style="background:rgba(41,128,185,0.12);color:var(--info)"><i class="fas fa-user-graduate"></i></div>
+                        <div class="qnc-info"><h4>Ordinary Level</h4><p>S1, S2, S3 - Ibitabo 12</p></div>
+                        <div class="qnc-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div class="quick-nav-card" data-goto="advanced">
+                        <div class="qnc-icon" style="background:rgba(212,160,23,0.12);color:var(--gold)"><i class="fas fa-brain"></i></div>
+                        <div class="qnc-info"><h4>Advanced Level</h4><p>L3, L4 - Ibitabo 10</p></div>
+                        <div class="qnc-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                    <div class="quick-nav-card" data-goto="software">
+                        <div class="qnc-icon" style="background:rgba(192,57,43,0.12);color:var(--danger)"><i class="fas fa-code"></i></div>
+                        <div class="qnc-info"><h4>Software Development</h4><p>Programming & ICT - Ibitabo 8</p></div>
+                        <div class="qnc-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                </div>
+
+                <div class="section-heading"><h3><i class="fas fa-sparkles"></i> Ibitabo bishya</h3></div>
+                <div class="books-grid" id="recentBooksGrid"></div>
+            </section>
+
+            <!-- ===== ALL BOOKS ===== -->
+            <section class="page-section" id="pageBooks">
+                <div class="section-heading"><h3><i class="fas fa-book"></i> Ibitabo byose</h3></div>
+                <div class="level-tabs" id="allLevelTabs">
+                    <button class="level-tab active" data-filter="all">Byose</button>
+                    <button class="level-tab" data-filter="primary">Primary</button>
+                    <button class="level-tab" data-filter="ordinary">Ordinary</button>
+                    <button class="level-tab" data-filter="advanced">Advanced</button>
+                    <button class="level-tab" data-filter="software">Software</button>
+                </div>
+                <div class="books-grid" id="allBooksGrid"></div>
+            </section>
+
+            <!-- ===== PRIMARY ===== -->
+            <section class="page-section" id="pagePrimary">
+                <div class="section-heading"><h3><i class="fas fa-child"></i> Primary Level <span style="color:var(--success)">(P1 - P6)</span></h3></div>
+                <div class="level-tabs" id="primaryTabs">
+                    <button class="level-tab active" data-filter="p-all">Byose</button>
+                    <button class="level-tab" data-filter="P1">P1</button>
+                    <button class="level-tab" data-filter="P2">P2</button>
+                    <button class="level-tab" data-filter="P3">P3</button>
+                    <button class="level-tab" data-filter="P4">P4</button>
+                    <button class="level-tab" data-filter="P5">P5</button>
+                    <button class="level-tab" data-filter="P6">P6</button>
+                </div>
+                <div class="books-grid" id="primaryGrid"></div>
+            </section>
+
+            <!-- ===== ORDINARY ===== -->
+            <section class="page-section" id="pageOrdinary">
+                <div class="section-heading"><h3><i class="fas fa-user-graduate"></i> Ordinary Level <span style="color:var(--info)">(S1 - S3)</span></h3></div>
+                <div class="level-tabs" id="ordinaryTabs">
+                    <button class="level-tab active" data-filter="s-all">Byose</button>
+                    <button class="level-tab" data-filter="S1">S1</button>
+                    <button class="level-tab" data-filter="S2">S2</button>
+                    <button class="level-tab" data-filter="S3">S3</button>
+                </div>
+                <div class="books-grid" id="ordinaryGrid"></div>
+            </section>
+
+            <!-- ===== ADVANCED ===== -->
+            <section class="page-section" id="pageAdvanced">
+                <div class="section-heading"><h3><i class="fas fa-brain"></i> Advanced Level <span style="color:var(--gold)">(L3 - L4)</span></h3></div>
+                <div class="level-tabs" id="advancedTabs">
+                    <button class="level-tab active" data-filter="l-all">Byose</button>
+                    <button class="level-tab" data-filter="L3">L3</button>
+                    <button class="level-tab" data-filter="L4">L4</button>
+                </div>
+                <div class="books-grid" id="advancedGrid"></div>
+            </section>
+
+            <!-- ===== SOFTWARE ===== -->
+            <section class="page-section" id="pageSoftware">
+                <div class="section-heading"><h3><i class="fas fa-code"></i> Software Development</h3></div>
+                <div class="books-grid" id="softwareGrid"></div>
+            </section>
+
+            <!-- ===== MY DOWNLOADS ===== -->
+            <section class="page-section" id="pageDownloads">
+                <div class="section-heading"><h3><i class="fas fa-download"></i> Ibitabo wakuyewe</h3></div>
+                <div id="downloadsList">
+                    <div class="empty-state"><i class="fas fa-download"></i><p>Nta gitabo cyakuyewe ukanya. Tangira ukure!</p></div>
+                </div>
+            </section>
+
+            <!-- ===== SUGGESTIONS ===== -->
+            <section class="page-section" id="pageSuggestions">
+                <div class="suggestions-wrap">
+                    <div class="section-heading"><h3><i class="fas fa-lightbulb"></i> Tanga ibitekerezo</h3></div>
+                    <div class="suggestion-form-card">
+                        <h3 style="margin-bottom:16px"><i class="fas fa-pen-fancy" style="color:var(--gold);margin-right:8px"></i> Andika ibitekerezo byawe</h3>
+                        <textarea id="sugText" rows="4" placeholder="Andika ibitekerezo byawe ngaha... Urashobora gutanga igitekerezo ku bitabo bishya, imiterere y'isomero, cyangwa ibindi."></textarea>
+                        <div class="form-row">
+                            <select id="sugCat">
+                                <option value="igitabo">Igitabo gishya</option>
+                                <option value="imiterere">Imiterere y'isomero</option>
+                                <option value="ikindi">Ibindi</option>
+                            </select>
+                            <input type="text" id="sugName" placeholder="Izina ryawe (bitagira ikibazo)">
+                        </div>
+                        <button class="submit-sug-btn" id="submitSug"><i class="fas fa-paper-plane"></i> Ohereza ibitekerezo</button>
+                    </div>
+
+                    <div class="section-heading"><h3><i class="fas fa-comments"></i> Ibitekerezo byoherejwe</h3></div>
+                    <div id="sugList"></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-box" id="toastBox"></div>
+
+<script>
+    // ===================== DATABASE Y'IBITABO =====================
+    const booksDB = [
+        // PRIMARY P1
+        {id:1,title:"Kinyarwanda cya P1",author:"MINEDUC",level:"P1",category:"primary",subject:"Kinyarwanda",desc:"Inkuru n'imibare y'ibanze",pages:64,size:"3.2 MB",color:"#27ae60"},
+        {id:2,title:"Mathematics P1",author:"MINEDUC",level:"P1",category:"primary",subject:"Mathematics",desc:"Counting, shapes & fun numbers",pages:80,size:"4.1 MB",color:"#2ecc71"},
+        {id:3,title:"English for P1",author:"MINEDUC",level:"P1",category:"primary",subject:"English",desc:"Alphabet and simple words",pages:72,size:"3.8 MB",color:"#27ae60"},
+        // P2
+        {id:4,title:"Kinyarwanda cya P2",author:"MINEDUC",level:"P2",category:"primary",subject:"Kinyarwanda",desc:"Gusoma no kwandika",pages:70,size:"3.5 MB",color:"#2ecc71"},
+        {id:5,title:"Mathematics P2",author:"MINEDUC",level:"P2",category:"primary",subject:"Mathematics",desc:"Addition and subtraction",pages:88,size:"4.5 MB",color:"#27ae60"},
+        {id:6,title:"Science & Nature P2",author:"MINEDUC",level:"P2",category:"primary",subject:"Science",desc:"Plants and animals basics",pages:68,size:"3.4 MB",color:"#2ecc71"},
+        // P3
+        {id:7,title:"Kinyarwanda cya P3",author:"MINEDUC",level:"P3",category:"primary",subject:"Kinyarwanda",desc:"Gusoma inkuru nziza",pages:76,size:"3.9 MB",color:"#27ae60"},
+        {id:8,title:"Mathematics P3",author:"MINEDUC",level:"P3",category:"primary",subject:"Mathematics",desc:"Multiplication basics",pages:92,size:"4.7 MB",color:"#2ecc71"},
+        {id:9,title:"General Science P3",author:"MINEDUC",level:"P3",category:"primary",subject:"Science",desc:"Weather & seasons",pages:68,size:"3.4 MB",color:"#27ae60"},
+        // P4
+        {id:10,title:"Kinyarwanda cya P4",author:"MINEDUC",level:"P4",category:"primary",subject:"Kinyarwanda",desc:"Imigani n'ibisakuzo",pages:82,size:"4.2 MB",color:"#2ecc71"},
+        {id:11,title:"Mathematics P4",author:"MINEDUC",level:"P4",category:"primary",subject:"Mathematics",desc:"Fractions & geometry",pages:96,size:"5.0 MB",color:"#27ae60"},
+        {id:12,title:"History of Rwanda P4",author:"MINEDUC",level:"P4",category:"primary",subject:"History",desc:"Ancient kingdoms to modern day",pages:78,size:"4.0 MB",color:"#2ecc71"},
+        // P5
+        {id:13,title:"Kinyarwanda cya P5",author:"MINEDUC",level:"P5",category:"primary",subject:"Kinyarwanda",desc:"Ibyerekeye umuco nyarwanda",pages:88,size:"4.6 MB",color:"#27ae60"},
+        {id:14,title:"Mathematics P5",author:"MINEDUC",level:"P5",category:"primary",subject:"Mathematics",desc:"Decimals & percentages",pages:104,size:"5.3 MB",color:"#2ecc71"},
+        {id:15,title:"Science P5: Human Body",author:"MINEDUC",level:"P5",category:"primary",subject:"Science",desc:"Body systems basics",pages:90,size:"4.8 MB",color:"#27ae60"},
+        // P6
+        {id:16,title:"Kinyarwanda cya P6",author:"MINEDUC",level:"P6",category:"primary",subject:"Kinyarwanda",desc:"Ibisakuzo n'ubuhanzi bwo gusoma",pages:94,size:"4.9 MB",color:"#2ecc71"},
+        {id:17,title:"Mathematics P6",author:"MINEDUC",level:"P6",category:"primary",subject:"Mathematics",desc:"Algebra intro & ratios",pages:110,size:"5.6 MB",color:"#27ae60"},
+        {id:18,title:"Integrated Science P6",author:"MINEDUC",level:"P6",category:"primary",subject:"Science",desc:"Energy & forces",pages:95,size:"5.1 MB",color:"#2ecc71"},
+
+        // ORDINARY S1
+        {id:19,title:"Kinyarwanda S1",author:"MINEDUC",level:"S1",category:"ordinary",subject:"Kinyarwanda",desc:"Ibyerekeye ururimi nyarwanda",pages:120,size:"6.2 MB",color:"#2980b9"},
+        {id:20,title:"Mathematics S1",author:"MINEDUC",level:"S1",category:"ordinary",subject:"Mathematics",desc:"Sets & integers",pages:140,size:"7.1 MB",color:"#3498db"},
+        {id:21,title:"Physics Basics S1",author:"MINEDUC",level:"S1",category:"ordinary",subject:"Physics",desc:"Introduction to matter",pages:100,size:"5.5 MB",color:"#2980b9"},
+        {id:22,title:"Chemistry S1",author:"MINEDUC",level:"S1",category:"ordinary",subject:"Chemistry",desc:"Elements & compounds",pages:96,size:"5.2 MB",color:"#3498db"},
+        // S2
+        {id:23,title:"Kinyarwanda S2",author:"MINEDUC",level:"S2",category:"ordinary",subject:"Kinyarwanda",desc:"Inkuru z'ubugeni",pages:128,size:"6.6 MB",color:"#3498db"},
+        {id:24,title:"Mathematics S2",author:"MINEDUC",level:"S2",category:"ordinary",subject:"Mathematics",desc:"Linear equations",pages:148,size:"7.5 MB",color:"#2980b9"},
+        {id:25,title:"Biology S2",author:"MINEDUC",level:"S2",category:"ordinary",subject:"Biology",desc:"Cells & tissues",pages:112,size:"5.8 MB",color:"#3498db"},
+        {id:26,title:"History & Citizenship S2",author:"MINEDUC",level:"S2",category:"ordinary",subject:"History",desc:"African kingdoms & governance",pages:104,size:"5.4 MB",color:"#2980b9"},
+        // S3
+        {id:27,title:"Mathematics S3",author:"MINEDUC",level:"S3",category:"ordinary",subject:"Mathematics",desc:"Quadratic functions",pages:156,size:"7.9 MB",color:"#3498db"},
+        {id:28,title:"Physics S3",author:"MINEDUC",level:"S3",category:"ordinary",subject:"Physics",desc:"Electricity & magnetism",pages:118,size:"6.1 MB",color:"#2980b9"},
+        {id:29,title:"Chemistry S3",author:"MINEDUC",level:"S3",category:"ordinary",subject:"Chemistry",desc:"Chemical reactions",pages:108,size:"5.7 MB",color:"#3498db"},
+        {id:30,title:"Geography S3",author:"MINEDUC",level:"S3",category:"ordinary",subject:"Geography",desc:"Climate & mapping",pages:102,size:"5.3 MB",color:"#2980b9"},
+
+        // ADVANCED L3
+        {id:31,title:"Mathematics L3",author:"REB",level:"L3",category:"advanced",subject:"Mathematics",desc:"Calculus & statistics",pages:200,size:"10.2 MB",color:"#d4a017"},
+        {id:32,title:"Physics L3: Mechanics",author:"REB",level:"L3",category:"advanced",subject:"Physics",desc:"Waves & motion",pages:180,size:"9.4 MB",color:"#f0c940"},
+        {id:33,title:"Chemistry L3",author:"REB",level:"L3",category:"advanced",subject:"Chemistry",desc:"Physical chemistry",pages:170,size:"8.8 MB",color:"#d4a017"},
+        {id:34,title:"Biology L3",author:"REB",level:"L3",category:"advanced",subject:"Biology",desc:"Human physiology",pages:164,size:"8.5 MB",color:"#f0c940"},
+        {id:35,title:"Kinyarwanda Literature L3",author:"REB",level:"L3",category:"advanced",subject:"Kinyarwanda",desc:"Ubucucike bw'ibitabo",pages:148,size:"7.8 MB",color:"#d4a017"},
+        // L4
+        {id:36,title:"Mathematics L4",author:"REB",level:"L4",category:"advanced",subject:"Mathematics",desc:"Complex numbers & vectors",pages:220,size:"11.0 MB",color:"#f0c940"},
+        {id:37,title:"Physics L4",author:"REB",level:"L4",category:"advanced",subject:"Physics",desc:"Nuclear physics & electronics",pages:196,size:"10.1 MB",color:"#d4a017"},
+        {id:38,title:"Chemistry L4 Organic",author:"REB",level:"L4",category:"advanced",subject:"Chemistry",desc:"Organic chemistry reactions",pages:184,size:"9.5 MB",color:"#f0c940"},
+        {id:39,title:"Economics L4",author:"REB",level:"L4",category:"advanced",subject:"Economics",desc:"Micro & macro economics",pages:156,size:"8.2 MB",color:"#d4a017"},
+        {id:40,title:"Literature in English L4",author:"REB",level:"L4",category:"advanced",subject:"English",desc:"Critical analysis of prose",pages:140,size:"7.4 MB",color:"#f0c940"},
+
+        // SOFTWARE DEVELOPMENT
+        {id:41,title:"HTML & CSS Fundamentals",author:"W3Schools",level:"Software",category:"software",subject:"Web Dev",desc:"Building web pages from scratch",pages:180,size:"9.0 MB",color:"#e74c3c"},
+        {id:42,title:"JavaScript Complete Guide",author:"MDN Docs",level:"Software",category:"software",subject:"Programming",desc:"Dynamic web applications",pages:240,size:"12.5 MB",color:"#c0392b"},
+        {id:43,title:"Python Programming",author:"Python.org",level:"Software",category:"software",subject:"Programming",desc:"Data types, loops & functions",pages:200,size:"10.4 MB",color:"#e74c3c"},
+        {id:44,title:"Database Management (SQL)",author:"MySQL",level:"Software",category:"software",subject:"Database",desc:"Relational database design & queries",pages:160,size:"8.2 MB",color:"#c0392b"},
+        {id:45,title:"Software Engineering Principles",author:"IEEE",level:"Software",category:"software",subject:"Engineering",desc:"SDLC, agile & design patterns",pages:140,size:"7.3 MB",color:"#e74c3c"},
+        {id:46,title:"Git & Version Control",author:"Git Docs",level:"Software",category:"software",subject:"DevOps",desc:"Collaborative coding workflows",pages:96,size:"5.0 MB",color:"#c0392b"},
+        {id:47,title:"Web Development with React",author:"React.js",level:"Software",category:"software",subject:"Web Dev",desc:"Component-based UI architecture",pages:188,size:"9.6 MB",color:"#e74c3c"},
+        {id:48,title:"Introduction to Algorithms",author:"CLRS",level:"Software",category:"software",subject:"CS Theory",desc:"Sorting, searching & complexity",pages:260,size:"13.5 MB",color:"#c0392b"},
+    ];
+
+    // ===================== APP STATE =====================
+    let downloads = [];
+    let suggestions = [];
+    let curPage = 'home';
+    let loggedInUser = '';
+
+    // ===================== DOM =====================
+    const loginPage = document.getElementById('loginPage');
+    const dashboard = document.getElementById('dashboard');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const loginUserEl = document.getElementById('loginUser');
+    const loginPassEl = document.getElementById('loginPass');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const globalSearch = document.getElementById('globalSearch');
+    const toastBox = document.getElementById('toastBox');
+
+    // ===================== AMBIENT PARTICLES =====================
+    (function initDust(){
+        const container = document.getElementById('ambientParticles');
+        for(let i=0;i<20;i++){
+            const d = document.createElement('div');
+            d.className='dust';
+            d.style.left = Math.random()*100+'%';
+            d.style.animationDuration = (12+Math.random()*18)+'s';
+            d.style.animationDelay = Math.random()*15+'s';
+            d.style.width = d.style.height = (2+Math.random()*3)+'px';
+            container.appendChild(d);
+        }
+    })();
+
+    // ===================== LOGIN =====================
+    loginForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const u = loginUserEl.value.trim();
+        const p = loginPassEl.value.trim();
+
+        if(p === 'library2024'){
+            loginError.classList.remove('show');
+            loggedInUser = u || 'Admin';
+            // Mettre à jour le nom dans le dashboard
+            document.getElementById('userNameSidebar').textContent = loggedInUser;
+            document.getElementById('userAvatarSidebar').textContent = loggedInUser.substring(0,2).toUpperCase();
+
+            loginPage.classList.add('hidden');
+            setTimeout(()=>{
+                loginPage.style.display='none';
+                dashboard.classList.add('active');
+                initDashboard();
+            },700);
+        } else {
+            loginError.classList.add('show');
+            loginPassEl.value='';
+            loginPassEl.focus();
+        }
+    });
+
+    // ===================== LOGOUT =====================
+    logoutBtn.addEventListener('click', function(){
+        dashboard.classList.remove('active');
+        loginPage.style.display='flex';
+        setTimeout(()=>loginPage.classList.remove('hidden'),50);
+        loginUserEl.value='';
+        loginPassEl.value='';
+        downloads=[];
+        suggestions=[];
+        curPage='home';
+    });
+
+    // ===================== NAVIGATION =====================
+    document.querySelectorAll('.nav-link').forEach(link=>{
+        link.addEventListener('click',function(){
+            goTo(this.dataset.page);
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('show');
+        });
+    });
+
+    document.querySelectorAll('.quick-nav-card').forEach(card=>{
+        card.addEventListener('click',function(){ goTo(this.dataset.goto); });
+    });
+
+    const pageMap = {
+        home:'pageHome',books:'pageBooks',primary:'pagePrimary',
+        ordinary:'pageOrdinary',advanced:'pageAdvanced',software:'pageSoftware',
+        downloads:'pageDownloads',suggestions:'pageSuggestions'
+    };
+
+    function goTo(page){
+        curPage=page;
+        document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+        const navEl=document.querySelector(`.nav-link[data-page="${page}"]`);
+        if(navEl) navEl.classList.add('active');
+
+        document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+        const sec=document.getElementById(pageMap[page]);
+        if(sec) sec.classList.add('active');
+    }
+
+    // ===================== MOBILE SIDEBAR =====================
+    menuToggle.addEventListener('click',()=>{sidebar.classList.toggle('open');sidebarOverlay.classList.toggle('show')});
+    sidebarOverlay.addEventListener('click',()=>{sidebar.classList.remove('open');sidebarOverlay.classList.remove('show')});
+
+    // ===================== BOOK CARD HTML =====================
+    function bookCardHTML(b){
+        const done = downloads.includes(b.id);
+        const bc = b.category==='primary'?'badge-primary':b.category==='ordinary'?'badge-ordinary':b.category==='advanced'?'badge-advanced':'badge-software';
+        return `
+        <div class="book-card">
+            <div class="book-cover" style="background:linear-gradient(135deg,${b.color}18,${b.color}06)">
+                <i class="fas fa-book" style="color:${b.color}"></i>
+                <span class="book-level-badge ${bc}">${b.level}</span>
+            </div>
+            <div class="book-body">
+                <h4>${esc(b.title)}</h4>
+                <p class="book-author">na ${esc(b.author)}</p>
+                <div class="book-tags">
+                    <span>${esc(b.subject)}</span>
+                    <span>${b.pages} p.</span>
+                    <span>${b.size}</span>
+                </div>
+                <p class="book-desc">${esc(b.desc)}</p>
+                <button class="download-btn ${done?'done':''}" onclick="handleDL(${b.id},this)">
+                    ${done?'<i class="fas fa-check"></i> Cyakuyewe':'<i class="fas fa-download"></i> Kura igitabo'}
+                </button>
+            </div>
+        </div>`;
+    }
+
+    function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    function renderGrid(elId,books){
+        const el=document.getElementById(elId);
+        if(!el)return;
+        if(!books.length){
+            el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-search"></i><p>Nta gitabo cyabonetse</p></div>';
+        } else {
+            el.innerHTML=books.map(b=>bookCardHTML(b)).join('');
+        }
+    }
+
+    // ===================== DOWNLOAD LOGIC =====================
+    function handleDL(id,btn){
+        if(downloads.includes(id))return;
+        const book=booksDB.find(b=>b.id===id);
+        if(!book)return;
+
+        downloads.push(id);
+        btn.classList.add('done');
+        btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Kura...';
+
+        // Générer et télécharger le fichier texte
+        setTimeout(()=>{
+            const content = genBookContent(book);
+            const blob = new Blob([content],{type:'text/plain;charset=utf-8'});
+            const link=document.createElement('a');
+            link.href=URL.createObjectURL(blob);
+            link.download=book.title.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+book.level+'.txt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            btn.innerHTML='<i class="fas fa-check"></i> Cyakuyewe';
+            toast(`Wakuye igitabo: ${book.title}`);
+            updateStats();
+            renderDownloads();
+        },1000);
+    }
+
+    function genBookContent(b){
+        return `============================================
+   GS MWENDO SCHOOL LIBRARY
+   E-Book Digital Resource
+============================================
+
+TITLE:   ${b.title}
+LEVEL:   ${b.level}
+SUBJECT: ${b.subject}
+AUTHOR:  ${b.author}
+PAGES:   ${b.pages}
+SIZE:    ${b.size}
+
+DESCRIPTION:
+ ${b.desc}
+
+--------------------------------------------
+This educational material is provided by
+GS Mwendo School Library to support students
+from P1 to L4 in their learning journey.
+
+Topics covered align with the national
+curriculum of Rwanda.
+
+Date Downloaded: ${new Date().toLocaleString()}
+============================================
+
+[CHAPTER 1 - Introduction]
+
+Welcome to ${b.title}. This book is designed
+for students at ${b.level} level studying
+ ${b.subject} at GS Mwendo School.
+
+The content covers fundamental concepts
+and provides exercises for practice.
+
+[End of E-Book Sample]
+For the complete version, please consult
+the school librarian.
+
+GS Mwendo - Excellence in Education!`;
+    }
+
+    // ===================== INIT DASHBOARD =====================
+    function initDashboard(){
+        // Ibitabo bishya (8 vyanyuma)
+        renderGrid('recentBooksGrid', [...booksDB].slice(-8).reverse());
+
+        // Ibitabo byose
+        renderGrid('allBooksGrid', booksDB);
+
+        // Primary
+        renderGrid('primaryGrid', booksDB.filter(b=>b.category==='primary'));
+
+        // Ordinary
+        renderGrid('ordinaryGrid', booksDB.filter(b=>b.category==='ordinary'));
+
+        // Advanced
+        renderGrid('advancedGrid', booksDB.filter(b=>b.category==='advanced'));
+
+        // Software
+        renderGrid('softwareGrid', booksDB.filter(b=>b.category==='software'));
+
+        updateStats();
+        renderSuggestions();
+        renderDownloads();
+    }
+
+    // ===================== FILTER TABS =====================
+    function setupTabs(containerId, gridId, filterFn){
+        const container = document.getElementById(containerId);
+        if(!container)return;
+        container.addEventListener('click',function(e){
+            if(!e.target.classList.contains('level-tab'))return;
+            container.querySelectorAll('.level-tab').forEach(t=>t.classList.remove('active'));
+            e.target.classList.add('active');
+            const f=e.target.dataset.filter;
+            const books=filterFn(f);
+            renderGrid(gridId,books);
+        });
+    }
+
+    setupTabs('allLevelTabs','allBooksGrid',f=>{
+        return f==='all'?booksDB:booksDB.filter(b=>b.category===f);
+    });
+    setupTabs('primaryTabs','primaryGrid',f=>{
+        const p=booksDB.filter(b=>b.category==='primary');
+        return f==='p-all'?p:p.filter(b=>b.level===f);
+    });
+    setupTabs('ordinaryTabs','ordinaryGrid',f=>{
+        const o=booksDB.filter(b=>b.category==='ordinary');
+        return f==='s-all'?o:o.filter(b=>b.level===f);
+    });
+    setupTabs('advancedTabs','advancedGrid',f=>{
+        const a=booksDB.filter(b=>b.category==='advanced');
+        return f==='l-all'?a:a.filter(b=>b.level===f);
+    });
+
+    // ===================== GLOBAL SEARCH =====================
+    globalSearch.addEventListener('input',function(){
+        const q=this.value.toLowerCase().trim();
+        if(!q){goTo(curPage);return}
+        goTo('books');
+        const filtered=booksDB.filter(b=>
+            b.title.toLowerCase().includes(q)||
+            b.subject.toLowerCase().includes(q)||
+            b.level.toLowerCase().includes(q)||
+            b.author.toLowerCase().includes(q)||
+            b.desc.toLowerCase().includes(q)
+        );
+        renderGrid('allBooksGrid',filtered);
+        document.querySelectorAll('#allLevelTabs .level-tab').forEach(t=>t.classList.remove('active'));
+        document.querySelector('#allLevelTabs .level-tab[data-filter="all"]')?.classList.add('active');
+    });
+
+    // ===================== SUGGESTIONS =====================
+    document.getElementById('submitSug').addEventListener('click',function(){
+        const text=document.getElementById('sugText').value.trim();
+        const cat=document.getElementById('sugCat').value;
+        const name=document.getElementById('sugName').value.trim()||'Anonyme';
+
+        if(!text){
+            toast('Nyamuneka andika ibitekerezo mbere yo kohereza','warn');
+            return;
+        }
+
+        suggestions.push({text,category:cat,author:name,time:new Date().toLocaleString('rw-RW')});
+        document.getElementById('sugText').value='';
+        document.getElementById('sugName').value='';
+
+        renderSuggestions();
+        updateStats();
+        toast('Ibitekerezo byawe byoherejwe neza!');
+    });
+
+    function renderSuggestions(){
+        const list=document.getElementById('sugList');
+        if(!suggestions.length){
+            list.innerHTML='<div class="empty-state"><i class="fas fa-lightbulb"></i><p>Nta bitekerezo byoherejwe kandi. Ba wa mbere!</p></div>';
+            return;
+        }
+        list.innerHTML=suggestions.map(s=>`
+            <div class="sug-item">
+                <div class="sug-head">
+                    <span class="sug-cat">${s.category==='igitabo'?'Igitabo gishya':s.category==='imiterere'?'Imiterere':'Ibindi'}</span>
+                    <span class="sug-time">${s.time}</span>
+                </div>
+                <p class="sug-text">${esc(s.text)}</p>
+                <p class="sug-author">— ${esc(s.author)}</p>
+            </div>
+        `).reverse().join('');
+    }
+
+    // ===================== MY DOWNLOADS =====================
+    function renderDownloads(){
+        const list=document.getElementById('downloadsList');
+        if(!downloads.length){
+            list.innerHTML='<div class="empty-state"><i class="fas fa-download"></i><p>Nta gitabo cyakuyewe ukanya. Tangira ukure!</p></div>';
+            return;
+        }
+        const books=downloads.map(id=>booksDB.find(b=>b.id===id)).filter(Boolean);
+        list.innerHTML=books.map(b=>`
+            <div class="dl-item">
+                <div class="dl-icon"><i class="fas fa-book"></i></div>
+                <div class="dl-info"><h4>${esc(b.title)}</h4><p>${esc(b.author)} | ${b.level} | ${b.size}</p></div>
+                <div class="dl-status"><i class="fas fa-check-circle"></i> Cyakuyewe</div>
+            </div>
+        `).join('');
+    }
+
+    // ===================== STATS =====================
+    function updateStats(){
+        document.getElementById('statBooks').textContent=booksDB.length;
+        document.getElementById('statDownloads').textContent=downloads.length;
+        document.getElementById('statSuggestions').textContent=suggestions.length;
+        document.getElementById('navBookCount').textContent=booksDB.length;
+        renderDownloads();
+    }
+
+    // ===================== TOAST =====================
+    function toast(msg,type='success'){
+        const t=document.createElement('div');
+        t.className='toast'+(type==='warn'?' warn':'');
+        const ic=type==='success'?'fa-check-circle':'fa-exclamation-triangle';
+        const clr=type==='success'?'var(--success)':'var(--gold)';
+        t.innerHTML=`<i class="fas ${ic}" style="color:${clr}"></i><span class="toast-text">${msg}</span>`;
+        toastBox.appendChild(t);
+        setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300)},3500);
+    }
+
+    // ===================== KEYBOARD =====================
+    document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){sidebar.classList.remove('open');sidebarOverlay.classList.remove('show')}
+    });
+</script>
+</body>
+</html>
