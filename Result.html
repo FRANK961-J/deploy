@@ -1,0 +1,926 @@
+
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>GS MWENDO TSS - Student Result System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif; }
+        body { background: linear-gradient(145deg, #e0f2f1 0%, #b2dfdb 100%); min-height: 100vh; padding: 2rem 1rem; }
+        
+        .app-wrapper { max-width: 1400px; margin: 0 auto; background: white; border-radius: 2rem; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Header & Logo */
+        .hero-header { background: #0b3d91; padding: 1.5rem 2rem; color: white; text-align: center; border-bottom: 5px solid #2ecc71; position: relative; }
+        .school-logo { height: 110px; width: auto; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .hero-header h1 { font-size: 1.8rem; margin-top: 15px; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        .hero-header p { font-size: 0.9rem; opacity: 0.9; margin-top: 5px; }
+        
+        /* Tabs */
+        .nav-tabs { background: #f8fafc; display: flex; gap: 0.5rem; padding: 1rem 2rem; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap; }
+        .tab-btn { background: transparent; border: none; padding: 0.7rem 1.6rem; border-radius: 40px; cursor: pointer; color: #2c3e50; font-weight: 600; transition: 0.2s; }
+        .tab-btn:hover { background: #e2e8f0; }
+        .tab-btn.active { background: #0b3d91; color: white; box-shadow: 0 4px 8px rgba(11, 61, 145, 0.3); }
+        
+        /* Panel */
+        .panel { display: none; padding: 2rem; animation: fadeSlide 0.3s ease; }
+        .panel.active-panel { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Forms */
+        .form-card { background: #ffffff; border-radius: 28px; padding: 1.8rem; box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08); border: 1px solid #eef2f6; margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+        .input-group label { font-weight: 700; color: #0b3d91; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { padding: 0.8rem; border: 2px solid #e2edf2; border-radius: 18px; width: 100%; transition: 0.3s; font-size: 0.95rem; }
+        input:focus, select:focus { border-color: #0b3d91; outline: none; box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.1); }
+        
+        /* Buttons */
+        .btn-primary { background: #0b3d91; color: white; border: none; padding: 0.9rem 1.8rem; border-radius: 40px; font-weight: bold; cursor: pointer; width: 100%; display: flex; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-primary:hover { background: #062a66; transform: translateY(-2px); }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-info { background: #3498db; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; text-decoration: none; display: inline-block; }
+        .btn-warning { background: #f39c12; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .btn-logout { background: #e67e22; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-weight: bold; float: right; margin-bottom: 10px; }
+
+        .filter-toggle { background: #f39c12; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+        .filter-toggle.active { background: #2ecc71; }
+
+        /* Image Upload Styles */
+        .upload-area {
+            border: 2px dashed #cbd5e1; border-radius: 18px; padding: 1rem; text-align: center; cursor: pointer; transition: 0.3s; position: relative; background: #f8fafc; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .upload-area:hover { border-color: #0b3d91; background: #f0f9ff; }
+        .upload-area input[type="file"] { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
+        .upload-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #0b3d91; display: none; margin-bottom: 5px; background: #ddd; }
+        .upload-preview.show { display: block; }
+        .upload-text { color: #64748b; font-size: 0.9rem; pointer-events: none; }
+
+        /* Bulk Marks Grid */
+        .bulk-marks-container {
+            background: #f0f9ff; border: 2px solid #bae6fd; border-radius: 20px; padding: 1.5rem; margin-top: 1rem; display: none;
+        }
+        .bulk-marks-container.show { display: block; animation: slideDown 0.4s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem; }
+        .subject-row { background: white; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .subject-row label { font-weight: 600; color: #334155; font-size: 0.95rem; }
+        .subject-row input { width: 80px; text-align: center; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 8px; }
+
+        /* Table */
+        .table-container { overflow-x: auto; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 600px; }
+        th { background: #0b3d91; color: white; padding: 12px 15px; text-align: left; position: sticky; top: 0; z-index: 10; }
+        td { border-bottom: 1px solid #e2e8f0; padding: 10px 15px; vertical-align: middle; background: white; }
+        tr:hover td { background: #f8fafc; }
+
+        /* Student List Card Styles */
+        .student-list-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem;
+            text-align: center; display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s;
+        }
+        .student-list-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .list-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #0b3d91; margin-bottom: 10px; background: #f1f5f9; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: white; padding: 2rem; border-radius: 20px; width: 90%; max-width: 500px; position: relative; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        
+        .alert { padding: 12px; border-radius: 10px; margin: 10px 0; font-size: 0.95rem; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Subject Tags in Modal */
+        .subject-tag { display: inline-block; background: #e0f2f1; color: #00695c; padding: 5px 12px; border-radius: 15px; margin: 3px; font-size: 0.85rem; font-weight: 600; border: 1px solid #b2dfdb; }
+
+        /* Teacher Login Styles */
+        .center-login { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <!-- Header -->
+    <div class="hero-header">
+        <img src="shema.png" alt="shema.png" class="shema.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3209/3209265.png'; this.onerror=null;">
+        <h1>GS MWENDO TSS</h1>
+        <p>Official Student Result System | Academic Year 2026</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn" id="adminTabBtn" data-tab="adminPanel">👨‍🏫 Admin Panel</button>
+        <button class="tab-btn" id="teacherTabBtn" data-tab="teacherPanel">👩‍🏫 Teacher Panel</button>
+        <button class="tab-btn" data-tab="studentAccess">🔑 Student Access</button>
+        <button class="tab-btn" data-tab="studentList">📋 Student List</button>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel" class="panel">
+        
+        <!-- 1. Dashboard Table -->
+        <div class="form-card">
+            <h2>📊 Student Database</h2>
+            <p style="margin-bottom:1rem; font-size:0.9rem; color:#666;">Manage students, view their specific subjects, and generate codes.</p>
+            <div class="table-container">
+                <table id="adminCredentialsTable">
+                    <thead><tr><th>Student</th><th>GLAB</th><th>Class</th><th>Option</th><th>Secret Code</th><th>Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 2. Register Student (WITH IMAGE UPLOAD) -->
+        <div class="form-card" style="border-left: 6px solid #0b3d91;">
+            <h2>➕ Register New Student</h2>
+            <form id="studentRegisterForm">
+                <div class="form-grid">
+                    <!-- Photo Upload Column -->
+                    <div class="input-group">
+                        <label>Student Photo (Upload)</label>
+                        <div class="upload-area" id="uploadArea">
+                            <img id="regPreview" class="upload-preview" src="" alt="">
+                            <span id="uploadText" class="upload-text">📷 Click to Upload Image</span>
+                            <input type="file" id="regPhotoInput" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Details Column -->
+                    <div style="display:flex; flex-direction:column; gap:1rem;">
+                        <div class="input-group"><label>Full Name</label><input type="text" id="fullName" required placeholder="e.g. NIYONKURU Jean"></div>
+                        <div class="input-group"><label>GLAB</label><input type="text" id="glabCode" required placeholder="e.g. GLAB-001"></div>
+                    </div>
+                    
+                    <div class="input-group"><label>Class (Umwaka)</label>
+                        <select id="studentClassReg"><option>S.1</option><option>S.2</option><option>S.3</option><option>S.4</option><option>S.5</option><option>S.6</option></select>
+                    </div>
+                    <div class="input-group"><label>Option (Isomo Rikuru)</label>
+                        <select id="studentOption">
+                            <option value="Software Development" selected>Software Development</option>
+                            <option value="Accounting">Accounting</option>
+                            <option value="Construction">Construction</option>
+                            <option value="General">General Science</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Register Student</button>
+                <div id="adminMsg"></div>
+            </form>
+        </div>
+
+        <!-- 3. BULK MARKS ENTRY (ADMIN) -->
+        <div class="form-card" style="border-top: 6px solid #2ecc71;">
+            <h2 style="display:flex; justify-content:space-between; align-items:center;">
+                📝 Enter Student Marks (Admin)
+                <button type="button" id="filterSoftDevBtn" class="filter-toggle">🎯 Filter: SoftDev (S.3-S.5)</button>
+            </h2>
+            <p style="font-size:0.9rem; color:#666; margin-bottom: 1rem;">Select a student to see ONLY the subjects they study based on their option.</p>
+            
+            <div class="form-grid" style="align-items:end;">
+                <div class="input-group">
+                    <label>Select Student</label>
+                    <select id="marksStudentSelect"></select>
+                </div>
+                <div class="input-group">
+                    <label>Term</label>
+                    <select id="termSelect"><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>
+                </div>
+            </div>
+
+            <!-- Dynamic Panel -->
+            <div id="bulkMarksPanel" class="bulk-marks-container">
+                <h3 id="selectedStudentName" style="color:#0b3d91; margin-bottom:1rem; text-align:center;">Enter Marks Below</h3>
+                <div id="saveFeedback" style="text-align:center; margin-bottom:10px;"></div>
+                <div class="subjects-grid" id="subjectsGrid"></div>
+                <button id="saveAllMarksBtn" class="btn-primary" style="max-width: 300px; margin: 0 auto;">💾 Save All Marks</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEACHER PANEL (NEW) -->
+    <div id="teacherPanel" class="panel">
+        <!-- Teacher Login View -->
+        <div id="teacherLoginView" class="center-login">
+            <div class="form-card" style="max-width: 400px; text-align: center;">
+                <h2 style="margin-bottom: 1rem; color: #0b3d91;">👩‍🏫 Teacher Login</h2>
+                <div id="teacherMsg" style="margin-bottom:1rem;"></div>
+                <div class="input-group">
+                    <input type="text" id="teacherUsername" placeholder="Username (mwalimu)" style="text-align:center;">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="teacherPassword" placeholder="Password (1234)" style="text-align:center;">
+                </div>
+                <button onclick="loginTeacher()" class="btn-primary">Login to Enter Marks</button>
+            </div>
+        </div>
+
+        <!-- Teacher Dashboard View -->
+        <div id="teacherDashboard" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>👩‍🏫 Teacher Workspace</h2>
+                <button class="btn-logout" onclick="logoutTeacher()">Logout 🔒</button>
+            </div>
+
+            <!-- TEACHER MARKS ENTRY -->
+            <div class="form-card" style="border-top: 6px solid #f39c12;">
+                <h2 style="display:flex; justify-content:space-between; align-items:center;">
+                    📝 Enter Student Marks
+                    <button type="button" id="t_filterSoftDevBtn" class="filter-toggle">🎯 Filter: SoftDev (S.3-S.5)</button>
+                </h2>
+                <p style="font-size:0.9rem; color:#666; margin-bottom: 1rem;">Select a student to enter marks for their specific subjects.</p>
+                
+                <div class="form-grid" style="align-items:end;">
+                    <div class="input-group">
+                        <label>Select Student</label>
+                        <select id="t_marksStudentSelect"></select>
+                    </div>
+                    <div class="input-group">
+                        <label>Term</label>
+                        <select id="t_termSelect"><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Panel for Teacher -->
+                <div id="t_bulkMarksPanel" class="bulk-marks-container">
+                    <h3 id="t_selectedStudentName" style="color:#f39c12; margin-bottom:1rem; text-align:center;">Enter Marks Below</h3>
+                    <div id="t_saveFeedback" style="text-align:center; margin-bottom:10px;"></div>
+                    <div class="subjects-grid" id="t_subjectsGrid"></div>
+                    <button id="t_saveAllMarksBtn" class="btn-primary" style="background:#f39c12; max-width: 300px; margin: 0 auto;">💾 Save All Marks</button>
+                </div>
+            </div>
+
+            <!-- Simple Student Reference List for Teachers -->
+            <div class="form-card">
+                <h3>📋 Student Reference</h3>
+                <div class="table-container" style="max-height: 300px;">
+                    <table>
+                        <thead><tr><th>Student</th><th>Class</th><th>Option</th></tr></thead>
+                        <tbody id="teacherStudentList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDENT ACCESS -->
+    <div id="studentAccess" class="panel">
+        <div class="form-card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+            <h2 style="margin-bottom:1.5rem;">🔐 Student Login</h2>
+            <div class="input-group"><label>GLAB ID</label><input type="text" id="loginGlab" placeholder="Enter GLAB"></div>
+            <div class="input-group"><label>Secret Code</label><input type="password" id="loginCode" placeholder="Enter Secret Code"></div>
+            <button id="verifyStudentBtn" class="btn-primary" style="margin-top:1rem;">View My Results</button>
+            <div id="studentResultArea" style="margin-top:1.5rem;"></div>
+        </div>
+    </div>
+
+    <!-- LIST WITH IMAGES -->
+    <div id="studentList" class="panel">
+        <div class="form-grid" id="allStudentsGrid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));"></div>
+    </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div id="adminLoginModal" class="modal-overlay">
+    <div class="modal-box" style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">🔒</div>
+        <h2>Admin Access</h2>
+        <p style="margin-bottom:1.5rem; color:#666;">Shyiramo ijambo ry'ibanga kugira uhinze.</p>
+        <input type="password" id="adminPasswordInput" placeholder="Enter Password (admin123)" style="margin-bottom:1rem; text-align:center;">
+        <div id="loginError" class="alert error" style="display:none;">Ijambo ry'ibanga sibyo (Wrong Password)!</div>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:1rem;">
+            <button class="btn-primary" onclick="checkAdminPassword()">Login</button>
+            <button class="btn-danger" onclick="closeAdminModal()">Funga</button>
+        </div>
+    </div>
+</div>
+
+<!-- STUDENT INFO MODAL -->
+<div id="studentInfoModal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+            <h2 style="color:#0b3d91;">👤 Student Details</h2>
+            <button onclick="document.getElementById('studentInfoModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="modalStudentContent" style="line-height: 1.6;"></div>
+        <div style="text-align:center; margin-top:1.5rem;">
+            <button class="btn-primary" onclick="document.getElementById('studentInfoModal').style.display='none'" style="width:auto; display:inline-flex;">Funga</button>
+        </div>
+    </div>
+</div>
+
+<!-- CHANGE PHOTO MODAL -->
+<div id="changePhotoModal" class="modal-overlay">
+    <div class="modal-box" style="text-align:center;">
+        <h2 style="color:#0b3d91; margin-bottom:1rem;">📷 Change Photo</h2>
+        <input type="hidden" id="editStudentId">
+        
+        <div class="upload-area" style="margin-bottom:1rem;">
+            <img id="editPreview" class="upload-preview" src="" alt="">
+            <span id="editUploadText" class="upload-text">Select New Image</span>
+            <input type="file" id="editPhotoInput" accept="image/*">
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn-primary" onclick="saveNewPhoto()">Save New Photo</button>
+            <button class="btn-danger" onclick="document.getElementById('changePhotoModal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DATA CONFIGURATION ---
+    let students = JSON.parse(localStorage.getItem('GS_MWENDO_students')) || [];
+    let academicMarks = JSON.parse(localStorage.getItem('GS_MWENDO_marks')) || [];
+    let isAdminLoggedIn = false;
+    let isTeacherLoggedIn = false;
+    let isFilterActive = false;
+    let t_isFilterActive = false;
+    let currentRegistrationImageBase64 = null;
+
+    // Teachers Data (Hardcoded for demo, can be moved to localStorage)
+    let teachers = [
+        { user: "mwalimu", pass: "1234", name: "Mugisha Jean" },
+        { user: "admin", pass: "admin123", name: "System Admin" } // Admin can also act as teacher
+    ];
+
+    // --- SUBJECTS MAPPING ---
+    const curriculum = {
+        "Software Development": ["Mathematics", "English", "Kinyarwanda", "Entrepreneurship", "Web Development", "Programming (Java/Python)", "Database Systems", "Computer Hardware", "Networking", "System Analysis"],
+        "Accounting": ["Mathematics", "English", "Kinyarwanda", "Entrepreneurship", "Financial Accounting", "Cost Accounting", "Commerce", "Economics"],
+        "Construction": ["Mathematics", "English", "Kinyarwanda", "Entrepreneurship", "Technical Drawing", "Construction Technology", "Surveying", "Building Materials"],
+        "General": ["Mathematics", "English", "Kinyarwanda", "Entrepreneurship", "Physics", "Chemistry", "Biology", "Geography", "History"]
+    };
+
+    function persistAll() {
+        try {
+            localStorage.setItem('GS_MWENDO_students', JSON.stringify(students));
+            localStorage.setItem('GS_MWENDO_marks', JSON.stringify(academicMarks));
+        } catch (e) { alert("Storage Full! Image might be too large. Try a smaller image."); }
+    }
+
+    function generateCode() { return 'MW' + Math.floor(10000 + Math.random() * 90000); }
+    
+    function computeGrade(m) {
+        if (m >= 80) return { l: 'A', p: 4 };
+        if (m >= 70) return { l: 'B', p: 3 };
+        if (m >= 60) return { l: 'C', p: 2 };
+        if (m >= 50) return { l: 'D', p: 1 };
+        return { l: 'F', p: 0 };
+    }
+
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    // --- IMAGE HANDLING (REGISTRATION) ---
+    const regPhotoInput = document.getElementById('regPhotoInput');
+    const regPreview = document.getElementById('regPreview');
+    const uploadText = document.getElementById('uploadText');
+
+    regPhotoInput.addEventListener('change', async function() {
+        if (this.files && this.files[0]) {
+            try {
+                const base64 = await getBase64(this.files[0]);
+                currentRegistrationImageBase64 = base64;
+                regPreview.src = base64;
+                regPreview.classList.add('show');
+                uploadText.style.display = 'none';
+            } catch (e) { alert("Failed to load image."); }
+        }
+    });
+
+    // --- REGISTER STUDENT ---
+    document.getElementById('studentRegisterForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('fullName').value.trim();
+        const glab = document.getElementById('glabCode').value.trim();
+        
+        if(students.find(x => x.glab === glab)) {
+            document.getElementById('adminMsg').innerHTML = `<div class="alert error">GLAB irasanzwe (Already exists)!</div>`;
+            return;
+        }
+
+        const finalImage = currentRegistrationImageBase64 || `https://ui-avatars.com/api/?background=0b3d91&color=fff&name=${name}`;
+
+        const s = {
+            id: Date.now(),
+            name: name,
+            glab: glab,
+            class: document.getElementById('studentClassReg').value,
+            option: document.getElementById('studentOption').value,
+            image: finalImage,
+            secretCode: generateCode()
+        };
+        
+        students.push(s);
+        persistAll();
+        
+        document.getElementById('adminMsg').innerHTML = `<div class="alert success">Yanditswe neza! Code: <strong>${s.secretCode}</strong></div>`;
+        refreshAdminDashboard();
+        refreshStudentSelects();
+        refreshTeacherStudentList();
+        renderList(); 
+        e.target.reset();
+        
+        regPreview.src = "";
+        regPreview.classList.remove('show');
+        uploadText.style.display = 'block';
+        currentRegistrationImageBase64 = null;
+    });
+
+    // --- FILTERS (ADMIN) ---
+    document.getElementById('filterSoftDevBtn').addEventListener('click', function() {
+        isFilterActive = !isFilterActive;
+        this.classList.toggle('active');
+        this.innerHTML = isFilterActive ? "❌ Show All Students" : "🎯 Filter: SoftDev (S.3-S.5)";
+        refreshStudentSelects();
+        document.getElementById('bulkMarksPanel').classList.remove('show');
+    });
+
+    // --- REFRESH SELECTS (ADMIN) ---
+    function refreshStudentSelects() {
+        const select = document.getElementById('marksStudentSelect');
+        select.innerHTML = '<option value="">-- Choose Student --</option>';
+        let list = students;
+        if (isFilterActive) {
+            list = students.filter(s => ['S.3','S.4','S.5'].includes(s.class) && s.option === 'Software Development');
+        }
+        list.forEach(s => {
+            select.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
+        });
+    }
+
+    // --- RENDER BULK INPUTS (ADMIN) ---
+    const studentSelect = document.getElementById('marksStudentSelect');
+    const termSelect = document.getElementById('termSelect');
+    const bulkPanel = document.getElementById('bulkMarksPanel');
+    const subjectsGrid = document.getElementById('subjectsGrid');
+    const selectedStudentName = document.getElementById('selectedStudentName');
+
+    function renderBulkInputs() {
+        const studentId = studentSelect.value;
+        const term = termSelect.value;
+        
+        if (!studentId) { bulkPanel.classList.remove('show'); return; }
+
+        const student = students.find(s => s.id == studentId);
+        const mySubjects = curriculum[student.option] || [];
+        
+        selectedStudentName.innerText = `Entering Marks: ${student.name} (${student.class} - ${student.option})`;
+        
+        let html = '';
+        mySubjects.forEach(sub => {
+            const existing = academicMarks.find(m => m.studentId == studentId && m.subject == sub && m.term == term);
+            const val = existing ? existing.marks : '';
+            
+            html += `
+                <div class="subject-row">
+                    <label>${sub}</label>
+                    <input type="number" class="mark-input" data-subject="${sub}" value="${val}" min="0" max="100" placeholder="-">
+                </div>
+            `;
+        });
+        
+        subjectsGrid.innerHTML = html;
+        document.getElementById('saveFeedback').innerHTML = '';
+        bulkPanel.classList.add('show');
+    }
+
+    studentSelect.addEventListener('change', renderBulkInputs);
+    termSelect.addEventListener('change', renderBulkInputs);
+
+    // --- SAVE MARKS (ADMIN) ---
+    document.getElementById('saveAllMarksBtn').addEventListener('click', () => {
+        const studentId = parseInt(document.getElementById('marksStudentSelect').value);
+        const term = termSelect.value;
+        const inputs = document.querySelectorAll('.mark-input');
+        
+        if(!studentId) return;
+
+        let count = 0;
+
+        inputs.forEach(input => {
+            const marksVal = input.value;
+            const subject = input.getAttribute('data-subject');
+
+            if (marksVal !== '') {
+                const marks = parseInt(marksVal);
+                
+                let index = academicMarks.findIndex(m => m.studentId === studentId && m.subject === subject && m.term === term);
+
+                const gradeObj = computeGrade(marks);
+                const newRecord = {
+                    id: index > -1 ? academicMarks[index].id : Date.now() + Math.random(),
+                    studentId: studentId,
+                    subject: subject,
+                    marks: marks,
+                    grade: gradeObj.l,
+                    points: gradeObj.p,
+                    term: term,
+                    year: 2026
+                };
+
+                if (index > -1) { academicMarks[index] = newRecord; } 
+                else { academicMarks.push(newRecord); }
+                count++;
+            }
+        });
+
+        persistAll();
+        
+        const fb = document.getElementById('saveFeedback');
+        if(count > 0) { fb.innerHTML = `<div class="alert success">✅ Saved ${count} subjects successfully!</div>`; } 
+        else { fb.innerHTML = `<div class="alert error">⚠️ No marks entered.</div>`; }
+    });
+
+    // ============================================================
+    // ================= TEACHER LOGIC START =====================
+    // ============================================================
+
+    function loginTeacher() {
+        const u = document.getElementById('teacherUsername').value.trim();
+        const p = document.getElementById('teacherPassword').value.trim();
+        const msg = document.getElementById('teacherMsg');
+
+        const teacher = teachers.find(t => t.user === u && t.pass === p);
+
+        if(teacher) {
+            isTeacherLoggedIn = true;
+            document.getElementById('teacherLoginView').style.display = 'none';
+            document.getElementById('teacherDashboard').style.display = 'block';
+            msg.innerHTML = '';
+            document.getElementById('teacherUsername').value = '';
+            document.getElementById('teacherPassword').value = '';
+            refreshTeacherStudentList();
+            refreshTeacherSelects();
+        } else {
+            msg.innerHTML = `<div class="alert error">Username cyangwa Password itabogamiye!</div>`;
+        }
+    }
+
+    function logoutTeacher() {
+        isTeacherLoggedIn = false;
+        document.getElementById('teacherDashboard').style.display = 'none';
+        document.getElementById('teacherLoginView').style.display = 'flex';
+        // Reset Tabs
+        document.querySelector('[data-tab="studentAccess"]').click();
+    }
+
+    function refreshTeacherStudentList() {
+        const tbody = document.getElementById('teacherStudentList');
+        tbody.innerHTML = students.map(s => `
+            <tr><td>${s.name}</td><td>${s.class}</td><td>${s.option}</td></tr>
+        `).join('');
+    }
+
+    // --- TEACHER FILTERS ---
+    document.getElementById('t_filterSoftDevBtn').addEventListener('click', function() {
+        t_isFilterActive = !t_isFilterActive;
+        this.classList.toggle('active');
+        this.innerHTML = t_isFilterActive ? "❌ Show All Students" : "🎯 Filter: SoftDev (S.3-S.5)";
+        refreshTeacherSelects();
+        document.getElementById('t_bulkMarksPanel').classList.remove('show');
+    });
+
+    // --- REFRESH SELECTS (TEACHER) ---
+    function refreshTeacherSelects() {
+        const select = document.getElementById('t_marksStudentSelect');
+        select.innerHTML = '<option value="">-- Choose Student --</option>';
+        let list = students;
+        if (t_isFilterActive) {
+            list = students.filter(s => ['S.3','S.4','S.5'].includes(s.class) && s.option === 'Software Development');
+        }
+        list.forEach(s => {
+            select.innerHTML += `<option value="${s.id}">${s.name} (${s.class})</option>`;
+        });
+    }
+
+    // --- RENDER BULK INPUTS (TEACHER) ---
+    const t_studentSelect = document.getElementById('t_marksStudentSelect');
+    const t_termSelect = document.getElementById('t_termSelect');
+    const t_bulkPanel = document.getElementById('t_bulkMarksPanel');
+    const t_subjectsGrid = document.getElementById('t_subjectsGrid');
+    const t_selectedStudentName = document.getElementById('t_selectedStudentName');
+
+    function renderTeacherBulkInputs() {
+        const studentId = t_studentSelect.value;
+        const term = t_termSelect.value;
+        
+        if (!studentId) { t_bulkPanel.classList.remove('show'); return; }
+
+        const student = students.find(s => s.id == studentId);
+        const mySubjects = curriculum[student.option] || [];
+        
+        t_selectedStudentName.innerText = `Entering Marks: ${student.name} (${student.class} - ${student.option})`;
+        
+        let html = '';
+        mySubjects.forEach(sub => {
+            const existing = academicMarks.find(m => m.studentId == studentId && m.subject == sub && m.term == term);
+            const val = existing ? existing.marks : '';
+            
+            html += `
+                <div class="subject-row">
+                    <label>${sub}</label>
+                    <input type="number" class="t-mark-input" data-subject="${sub}" value="${val}" min="0" max="100" placeholder="-">
+                </div>
+            `;
+        });
+        
+        t_subjectsGrid.innerHTML = html;
+        document.getElementById('t_saveFeedback').innerHTML = '';
+        t_bulkPanel.classList.add('show');
+    }
+
+    t_studentSelect.addEventListener('change', renderTeacherBulkInputs);
+    t_termSelect.addEventListener('change', renderTeacherBulkInputs);
+
+    // --- SAVE MARKS (TEACHER) ---
+    document.getElementById('t_saveAllMarksBtn').addEventListener('click', () => {
+        const studentId = parseInt(document.getElementById('t_marksStudentSelect').value);
+        const term = t_termSelect.value;
+        const inputs = document.querySelectorAll('.t-mark-input');
+        
+        if(!studentId) return;
+
+        let count = 0;
+
+        inputs.forEach(input => {
+            const marksVal = input.value;
+            const subject = input.getAttribute('data-subject');
+
+            if (marksVal !== '') {
+                const marks = parseInt(marksVal);
+                
+                let index = academicMarks.findIndex(m => m.studentId === studentId && m.subject === subject && m.term === term);
+
+                const gradeObj = computeGrade(marks);
+                const newRecord = {
+                    id: index > -1 ? academicMarks[index].id : Date.now() + Math.random(),
+                    studentId: studentId,
+                    subject: subject,
+                    marks: marks,
+                    grade: gradeObj.l,
+                    points: gradeObj.p,
+                    term: term,
+                    year: 2026
+                };
+
+                if (index > -1) { academicMarks[index] = newRecord; } 
+                else { academicMarks.push(newRecord); }
+                count++;
+            }
+        });
+
+        persistAll();
+        
+        const fb = document.getElementById('t_saveFeedback');
+        if(count > 0) { fb.innerHTML = `<div class="alert success">✅ Saved ${count} subjects successfully!</div>`; } 
+        else { fb.innerHTML = `<div class="alert error">⚠️ No marks entered.</div>`; }
+    });
+
+    // ============================================================
+    // ================= TEACHER LOGIC END =======================
+    // ============================================================
+
+
+    // --- STUDENT LOGIN ---
+    document.getElementById('verifyStudentBtn').addEventListener('click', () => {
+        const inputGlab = document.getElementById('loginGlab').value.trim();
+        const inputCode = document.getElementById('loginCode').value.trim();
+        
+        const s = students.find(x => x.glab === inputGlab && x.secretCode === inputCode);
+        const area = document.getElementById('studentResultArea');
+        
+        if(!s) { 
+            area.innerHTML = '<div class="alert error">❌ GLAB cyangwa Code itabogamiye.</div>'; 
+            return; 
+        }
+        
+        const marks = academicMarks.filter(m => m.studentId === s.id);
+        
+        if(marks.length === 0) { 
+            area.innerHTML = '<div class="alert">Nta manota urabona. Vugisha umuyobozi (Admin).</div>'; 
+            return; 
+        }
+
+        let rows = ''; let total = 0;
+        marks.forEach(m => {
+            total += m.marks;
+            rows += `<tr><td>${m.subject}</td><td>${m.marks}</td><td style="font-weight:bold; color:#0b3d91;">${m.grade}</td><td>${m.term}</td></tr>`;
+        });
+        const avg = (total/marks.length).toFixed(1);
+
+        area.innerHTML = `
+            <div class="form-card" style="border-left:5px solid #2ecc71;">
+                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <img src="${s.image}" style="width:70px; height:70px; border-radius:50%; border:3px solid #0b3d91; object-fit:cover;">
+                    <div>
+                        <h3 style="color:#0b3d91;">${s.name}</h3>
+                        <small>${s.class} | ${s.option}</small>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table><thead><tr><th>Subject</th><th>Marks</th><th>Grade</th><th>Term</th></tr></thead><tbody>${rows}</tbody></table>
+                </div>
+                <div style="background:#f0f9ff; padding:10px; border-radius:10px; margin-top:15px; text-align:center;">
+                    <h4>Average (Impuzandengo): ${avg}%</h4>
+                </div>
+            </div>
+        `;
+    });
+
+    // --- ADMIN DASHBOARD ---
+    function refreshAdminDashboard() {
+        const tbody = document.querySelector('#adminCredentialsTable tbody');
+        if(students.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data found.</td></tr>'; return; }
+        
+        tbody.innerHTML = students.map(s => `
+            <tr>
+                <td style="display:flex; align-items:center; gap:10px;">
+                    <img src="${s.image}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+                    ${s.name}
+                </td>
+                <td>${s.glab}</td>
+                <td><span style="background:#e0f2f1; color:#00695c; padding:2px 8px; border-radius:4px; font-weight:bold;">${s.class}</span></td>
+                <td>${s.option}</td>
+                <td><span style="background:#2ecc71; color:#fff; padding:2px 6px; border-radius:4px; font-weight:bold; font-family:monospace;">${s.secretCode}</span></td>
+                <td>
+                    <button class="btn-warning" onclick="openChangePhoto(${s.id})">📷 Img</button>
+                    <button class="btn-info" onclick="viewStudentInfo(${s.id})">👁️ Info</button>
+                    <button class="btn-danger" onclick="del(${s.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // --- CHANGE PHOTO LOGIC ---
+    window.openChangePhoto = (id) => {
+        const s = students.find(x => x.id === id);
+        if(!s) return;
+        document.getElementById('editStudentId').value = id;
+        document.getElementById('editPreview').src = s.image;
+        document.getElementById('editPreview').classList.add('show');
+        document.getElementById('editUploadText').style.display = 'none';
+        document.getElementById('changePhotoModal').style.display = 'flex';
+    };
+
+    document.getElementById('editPhotoInput').addEventListener('change', async function() {
+        if (this.files && this.files[0]) {
+            const base64 = await getBase64(this.files[0]);
+            document.getElementById('editPreview').src = base64;
+        }
+    });
+
+    window.saveNewPhoto = async () => {
+        const id = parseInt(document.getElementById('editStudentId').value);
+        const fileInput = document.getElementById('editPhotoInput');
+        let newImageSrc = document.getElementById('editPreview').src; 
+        
+        if (fileInput.files && fileInput.files[0]) {
+            newImageSrc = await getBase64(fileInput.files[0]);
+        }
+
+        const index = students.findIndex(s => s.id === id);
+        if(index > -1) {
+            students[index].image = newImageSrc;
+            persistAll();
+            refreshAdminDashboard();
+            renderList();
+            document.getElementById('changePhotoModal').style.display = 'none';
+        }
+    }
+
+    // --- VIEW STUDENT INFO ---
+    window.viewStudentInfo = (id) => {
+        const s = students.find(x => x.id === id);
+        if(!s) return;
+        
+        const subjectsList = curriculum[s.option] || ["No subjects defined"];
+        const subjectsHtml = subjectsList.map(sub => `<span class="subject-tag">${sub}</span>`).join('');
+
+        const content = `
+            <div style="text-align:center; margin-bottom:1rem;">
+                <img src="${s.image}" style="width:100px; height:100px; border-radius:50%; border:4px solid #e2e8f0; object-fit:cover;">
+                <h3 style="margin-top:10px; color:#0b3d91;">${s.name}</h3>
+                <p style="color:#666;">GLAB: ${s.glab}</p>
+            </div>
+            <div style="background:#f8fafc; padding:1rem; border-radius:12px; margin-bottom:1rem; text-align:left;">
+                <p><strong>📅 Class (Umwaka):</strong> ${s.class}</p>
+                <p><strong>🎓 Option:</strong> ${s.option}</p>
+                <p><strong>🔑 Secret Code:</strong> ${s.secretCode}</p>
+            </div>
+            <div style="text-align:left;">
+                <p style="margin-bottom:0.5rem; font-weight:bold; color:#0b3d91;">📚 Masomo yiga (Subjects):</p>
+                <div style="line-height:2;">
+                    ${subjectsHtml}
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('modalStudentContent').innerHTML = content;
+        document.getElementById('studentInfoModal').style.display = 'flex';
+    }
+
+    window.del = (id) => {
+        if(confirm('Uzahisha uwo munyeshuri? Are you sure?')) {
+            students = students.filter(s => s.id !== id);
+            academicMarks = academicMarks.filter(m => m.studentId !== id);
+            persistAll();
+            refreshAdminDashboard();
+            refreshStudentSelects();
+            refreshTeacherStudentList(); // Update teacher list too
+            renderList();
+        }
+    };
+
+    // --- RENDER LIST WITH IMAGES ---
+    function renderList() {
+        const grid = document.getElementById('allStudentsGrid');
+        if(students.length === 0) { grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">No students.</p>'; return; }
+
+        grid.innerHTML = students.map(s => `
+            <div class="student-list-card">
+                <img src="${s.image}" class="list-avatar" onerror="this.src='https://ui-avatars.com/api/?background=random&name=${s.name}'">
+                <h3 style="font-size:1.1rem; color:#0b3d91;">${s.name}</h3>
+                <p style="color:#666; margin:5px 0;">${s.class} | ${s.option}</p>
+                <small style="color:#999;">${s.glab}</small>
+            </div>
+        `).join('');
+    }
+
+    // --- TABS & MODAL LOGIC ---
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.panel');
+
+    document.getElementById('adminTabBtn').addEventListener('click', (e) => {
+        if (!isAdminLoggedIn) { 
+            e.preventDefault(); 
+            document.getElementById('adminLoginModal').style.display = 'flex'; 
+        }
+    });
+
+    // Teacher Tab Click Logic
+    document.getElementById('teacherTabBtn').addEventListener('click', (e) => {
+        if (!isTeacherLoggedIn) { 
+            e.preventDefault(); 
+            // Don't open a modal, just show the login view inside the panel
+            panels.forEach(p => p.classList.remove('active-panel'));
+            document.getElementById('teacherPanel').classList.add('active-panel');
+            tabs.forEach(x => x.classList.remove('active'));
+            document.getElementById('teacherTabBtn').classList.add('active');
+        } else {
+            // Already logged in, show dashboard
+            panels.forEach(p => p.classList.remove('active-panel'));
+            document.getElementById('teacherPanel').classList.add('active-panel');
+            tabs.forEach(x => x.classList.remove('active'));
+            document.getElementById('teacherTabBtn').classList.add('active');
+        }
+    });
+
+    tabs.forEach(t => {
+        t.addEventListener('click', () => {
+            if(t.id === 'adminTabBtn' && !isAdminLoggedIn) return;
+            if(t.id === 'teacherTabBtn') return; // Handled by specific listener above
+
+            panels.forEach(p => p.classList.remove('active-panel'));
+            document.getElementById(t.dataset.tab).classList.add('active-panel');
+            tabs.forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            if(t.dataset.tab === 'studentList') renderList();
+        });
+    });
+
+    function checkAdminPassword() {
+        if(document.getElementById('adminPasswordInput').value === 'admin123') {
+            isAdminLoggedIn = true;
+            document.getElementById('adminLoginModal').style.display = 'none';
+            document.getElementById('adminTabBtn').click();
+            document.getElementById('adminPasswordInput').value = '';
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
+    function closeAdminModal() { document.getElementById('adminLoginModal').style.display = 'none'; }
+
+    // INIT
+    if(students.length === 0) {
+        students.push({ id: 1, name: "Munyaneza Jean", glab: "DEMO-001", class: "S.4", option: "Software Development", secretCode: "MW12345", image: "https://randomuser.me/api/portraits/men/32.jpg" });
+        persistAll();
+    }
+    refreshAdminDashboard();
+    refreshStudentSelects();
+    refreshTeacherStudentList();
+    renderList();
+</script>
+</body>
+</html>
